@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Billetterie – Dîner de Gala</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E9ECF5;--card:#fff;--ink:#141A3F;--muted:#5B6285;--line:#C9CEE3;--gold:#9A7418;--btn:#141A3F;--btnink:#F6EFD8;--err:#B3261E;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B102B;--card:#151B45;--ink:#F3EEDC;--muted:#A5ABD0;--line:#2D3566;--gold:#E6C16A;--btn:#E6C16A;--btnink:#141A3F;--err:#FF8A80}}
+:root[data-theme="dark"]{--bg:#0B102B;--card:#151B45;--ink:#F3EEDC;--muted:#A5ABD0;--line:#2D3566;--gold:#E6C16A;--btn:#E6C16A;--btnink:#141A3F;--err:#FF8A80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Outfit,system-ui,sans-serif;display:flex;justify-content:center;padding:28px 16px}
+.ticket{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.head{padding:28px 24px 22px;border-bottom:2px dashed var(--line);position:relative}
+.head:before,.head:after{content:"";position:absolute;bottom:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+.head:before{left:-11px}.head:after{right:-11px}
+h1{font:600 38px/1.05 "Cormorant Garamond",Georgia,serif;margin:0 0 8px;letter-spacing:.2px}
+.meta{color:var(--muted);font-size:14px;margin:0}
+form{padding:26px 24px 24px;display:grid;gap:16px}
+label{display:grid;gap:6px;font-size:14px;font-weight:500}
+input{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:10px;padding:12px 14px;width:100%}
+input:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.qty{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 8px 8px 14px}
+.qty b{font-weight:500}
+.step{display:flex;align-items:center;gap:14px}
+.step button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:20px;cursor:pointer}
+.step output{min-width:20px;text-align:center;font-weight:600}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:16px}
+.total strong{font:600 32px "Cormorant Garamond",Georgia,serif;color:var(--gold)}
+.pay{font:600 16px Outfit,sans-serif;background:var(--btn);color:var(--btnink);border:0;border-radius:12px;padding:15px;cursor:pointer}
+.pay:disabled{opacity:.5;cursor:wait}
+.err{color:var(--err);font-size:14px;min-height:1.2em;margin:0}
+.done{padding:34px 24px;text-align:center;display:none}
+.done h2{font:600 30px "Cormorant Garamond",Georgia,serif;margin:0 0 8px}
+.done p{color:var(--muted);margin:6px 0}
+.tag{display:inline-block;margin-top:14px;font-size:13px;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:4px 12px}
+@media (prefers-reduced-motion:no-preference){.done.show{animation:in .35s ease}@keyframes in{from{opacity:0;transform:translateY(8px)}}}
+</style>
+</head>
+<body>
+<main class="ticket">
+  <header class="head">
+    <h1>Dîner de Gala</h1>
+    <p class="meta">Samedi 20 décembre 2026, 19 h · Salle de la marie, San Pedro</p>
+  </header>
+
+  <form id="f" novalidate>
+    <label>Nom complet
+      <input name="nom" autocomplete="name" required placeholder="Ex. Kouassi Awa">
+    </label>
+    <label>Adresse e-mail
+      <input name="email" type="email" autocomplete="email" required placeholder="awa@exemple.com">
+    </label>
+    <label>Téléphone (Wave, Orange Money…)
+      <input name="tel" type="tel" autocomplete="tel" required placeholder="07 00 00 00 00">
+    </label>
+
+    <div class="qty">
+      <span><b>Billets</b><br><small class="meta" id="pu"></small></span>
+      <div class="step">
+        <button type="button" id="moins" aria-label="Retirer un billet">−</button>
+        <output id="n">1</output>
+        <button type="button" id="plus" aria-label="Ajouter un billet">+</button>
+      </div>
+    </div>
+
+    <div class="total"><span>Total</span><strong id="total">0 FCFA</strong></div>
+    <p class="err" id="err" role="alert"></p>
+    <button class="pay" id="pay" type="submit">Payer mes billets</button>
+  </form>
+
+  <section class="done" id="done" aria-live="polite">
+    <h2>Commande enregistrée</h2>
+    <p id="recap"></p>
+    <p>Un e-mail de confirmation vous sera envoyé une fois le paiement validé.</p>
+    <span class="tag" id="demo" hidden>Aperçu : aucun paiement réel</span>
+  </section>
+</main>
+
+<script>
+const PRIX = 10000; // FCFA : le serveur recalcule toujours le vrai montant
+const fmt = n => n.toLocaleString("fr-FR").replace(/\u202f/g," ") + " FCFA";
+const $ = id => document.getElementById(id);
+let n = 1;
+
+function maj(){ $("n").textContent = n; $("total").textContent = fmt(n*PRIX); $("pu").textContent = fmt(PRIX) + " par billet"; }
+$("plus").onclick = () => { if(n<10){n++;maj()} };
+$("moins").onclick = () => { if(n>1){n--;maj()} };
+maj();
+
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(e.target));
+  $("err").textContent = "";
+  if(!d.nom.trim() || !/^\S+@\S+\.\S+$/.test(d.email) || d.tel.replace(/\D/g,"").length < 8){
+    $("err").textContent = "Vérifiez votre nom, votre e-mail et votre numéro de téléphone.";
+    return;
+  }
+  $("pay").disabled = true;
+  let demo = false;
+  try{
+    const r = await fetch("/api/commande", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({...d, quantite:n})});
+    if(!r.ok) throw new Error("serveur");
+    const j = await r.json();
+    if(j.paiement_url){ location.href = j.paiement_url; return; }
+  }catch(_){ demo = true; }
+  $("recap").textContent = n + (n>1 ? " billets" : " billet") + " au nom de " + d.nom.trim() + " · " + fmt(n*PRIX);
+  $("demo").hidden = !demo;
+  $("f").style.display = "none";
+  $("done").style.display = "block"; $("done").classList.add("show");
+});
+</script>
+</body>
+</html>
