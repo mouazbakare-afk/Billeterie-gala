@@ -57,6 +57,11 @@ app.post("/api/commande", async (req, res) => {
       paiement_url = j.data && j.data.payment_url;
     } catch (e) { console.error("CinetPay :", e.message); }
   }
+  if (!paiement_url && process.env.WAVE_LINK) {
+    const sep = process.env.WAVE_LINK.includes("?") ? "&" : "?";
+    paiement_url = process.env.WAVE_LINK + sep + "amount=" + commande.montant;
+  }
+
   res.json({ id: commande.id, paiement_url });
 });
 
